@@ -240,21 +240,24 @@ class RayTracer {
     }
 
     private traceRay(ray: Ray, depth: number = 0): Color {
-        var tmin = 9999999999999;
+        var tmin = 99999999;
         var closestObject = spheres[0];
         var pixelColor: Color = backgroundColor;
         var kala: Color;
+        console.log(spheres)
         for (var i = 0; i < spheres.length; i++) {
             var t: number[] = this.find_t(ray, spheres[i]);
             if (t.length == 0) {
                 tmin = tmin;
                 closestObject = closestObject;
             } else if (t.length == 1) {
+                
                 if (t[0] > 0 && t[0] < tmin) {
                     tmin = t[0]
                     closestObject = spheres[i]
                 }
             } else if (t.length == 2) {
+                
                 var temp = 0;
                 if (t[0] > 0 && t[1] < 0) {
                     temp = t[0]
@@ -274,45 +277,43 @@ class RayTracer {
                         tmin = temp
                         closestObject = spheres[i]
                     }
-                } else {
-                    tmin = tmin;
-                    closestObject = closestObject;
                 }
             }
-            if (tmin == 9999999999999) {
-                pixelColor = backgroundColor;
-            } else {
-                var lightColor = new Color(0,0,0);
 
-                kala = Color.scale(closestObject.k_ambient, ambientLight.color)
-                kala = Color.times(kala, new Color(closestObject.dr, closestObject.dg, closestObject.db))
 
-                for (var i = 0; i < lights.length; i++) {
-                    var P = Vector.plus(ray.start, Vector.times(tmin, ray.dir))
-                    var N = Vector.norm(Vector.minus(P, closestObject.origin))
-                    var L = Vector.norm(Vector.minus(new Vector(lights[i].x, lights[i].y, lights[i].z), P))
-                    var NL = Math.max(0, Vector.dot(N,L))
-                    
-                    var V = Vector.norm(Vector.minus(ray.start, P))
-                    var R = Vector.plus(Vector.times(-1, V), Vector.times(2 * Vector.dot(V,N), N))
-                    var LR = Math.max(0, Vector.dot(L,R))
-                    var LR = Math.pow(LR, closestObject.specular_pow)
+        }
+        if (tmin == 99999999) {
+            pixelColor = backgroundColor;
+        } else {
+            var lightColor = new Color(0,0,0);
 
-                    var I = lights[i].color
-                    var kd = new Color(closestObject.dr, closestObject.dg, closestObject.db);
+            kala = Color.scale(closestObject.k_ambient, ambientLight.color)
+            kala = Color.times(kala, new Color(closestObject.dr, closestObject.dg, closestObject.db))
 
-                    var tempNumDiff = Color.scale(NL, kd)
-                    var tempColorDiff = Color.times(tempNumDiff, I)
+            for (var i = 0; i < lights.length; i++) {
+                var P = Vector.plus(ray.start, Vector.times(tmin, ray.dir))
+                var N = Vector.norm(Vector.minus(P, closestObject.origin))
+                var L = Vector.norm(Vector.minus(new Vector(lights[i].x, lights[i].y, lights[i].z), P))
+                var NL = Math.max(0, Vector.dot(N,L))
+                
+                var V = Vector.norm(Vector.minus(ray.start, P))
+                var R = Vector.plus(Vector.times(-1, V), Vector.times(2 * Vector.dot(V,N), N))
+                var LR = Math.max(0, Vector.dot(L,R))
+                var LR = Math.pow(LR, closestObject.specular_pow)
 
-                    var tempNumSpec = Color.scale(closestObject.k_specular, I)
-                    var tempColorSpec = Color.scale(LR, tempNumSpec)
+                var I = lights[i].color
+                var kd = new Color(closestObject.dr, closestObject.dg, closestObject.db);
 
-                    lightColor = Color.plus(lightColor, tempColorSpec)
-                    lightColor = Color.plus(lightColor, tempColorDiff)
-                }
-                pixelColor = Color.plus(kala, lightColor);
+                var tempNumDiff = Color.scale(NL, kd)
+                var tempColorDiff = Color.times(tempNumDiff, I)
 
+                var tempNumSpec = Color.scale(closestObject.k_specular, I)
+                var tempColorSpec = Color.scale(LR, tempNumSpec)
+
+                lightColor = Color.plus(lightColor, tempColorSpec)
+                lightColor = Color.plus(lightColor, tempColorDiff)
             }
+            pixelColor = Color.plus(kala, lightColor);
 
         }
         return pixelColor;
