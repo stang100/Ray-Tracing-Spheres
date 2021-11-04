@@ -234,7 +234,6 @@ class RayTracer {
         var vs = -1 + ((2 * (j + 0.5)) / this.screenHeight);
         var direct = Vector.norm(Vector.plus(Vector.times(d, camera.w), Vector.plus(Vector.times(us, camera.u), Vector.times(vs, camera.v))))
         var ray : Ray = {start: camera.pos, dir : direct};
-        console.log(i,j,ray)
         return ray;
 
     }
@@ -244,7 +243,6 @@ class RayTracer {
         var closestObject = spheres[0];
         var pixelColor: Color = backgroundColor;
         var kala: Color;
-        console.log(spheres)
         for (var i = 0; i < spheres.length; i++) {
             var t: number[] = this.find_t(ray, spheres[i]);
             if (t.length == 0) {
